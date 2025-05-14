@@ -47,7 +47,8 @@ jobs:
       - name: Download model artifacts
         run: |
           echo "Downloading model artifact for run: $RUN_ID"
-          mlflow artifacts download --run-id $RUN_ID --artifact-path xgb_model -d ./xgb_model
+          mlflow artifacts download --run-id $RUN_ID --artifact-path xgb_model -d ./downloaded
+          mv ./downloaded/xgb_model ./xgb_model
 
       - name: Upload model artifact
         uses: actions/upload-artifact@v4
