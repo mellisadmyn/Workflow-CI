@@ -29,7 +29,7 @@ jobs:
 
     - name: Run MLflow project
       run: |
-        mlflow run MLProject --env-manager=local
+        mlflow run MLProject --env-manager=local --run-name xgb_fixed_run
 
     - name: Get latest run ID
       id: get_run_id
@@ -46,7 +46,7 @@ jobs:
 
     - name: Build Docker image
       run: |
-        mlflow models build-docker --model-uri runs:/${{ env.RUN_ID }}/xgb_model --name sleep-disorder-model
+        mlflow models build-docker --model-uri runs:/${{ steps.get_run_id.outputs.run_id }}/xgb_model --name sleep-disorder-model
 
     - name: Tag Docker image
       run: |
