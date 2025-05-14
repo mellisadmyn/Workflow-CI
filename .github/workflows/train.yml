@@ -31,12 +31,18 @@ jobs:
       run: |
         mlflow run MLProject --env-manager=local --run-name xgb_fixed_run
 
-    - name: Get latest run ID
-      id: get_run_id
+    - name: Get latest MLflow run_id
       run: |
-        RUN_ID=$(ls -td mlruns/0/* | head -n 1 | cut -d'/' -f3)
-        echo "RUN_ID=$RUN_ID" >> $GITHUB_ENV
-        echo "run_id=$RUN_ID" >> $GITHUB_OUTPUT
+        echo "Getting latest run ID..."
+        python -c "
+            import mlflow
+            client = mlflow.tracking.MlflowClient()
+            runs = client.search_runs(experiment_ids=['0'], order_by=['start_time DESC'])
+            run_id = runs[0].info.run_id
+            print(f'Latest run ID: {run_id}')
+            with open('$GITHUB_ENV', 'a') as f:
+                f.write(f'RUN_ID={run_id}\n')
+          "
 
     - name: Upload model artifact
       uses: actions/upload-artifact@v4
