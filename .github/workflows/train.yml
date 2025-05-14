@@ -46,7 +46,7 @@ jobs:
 
     - name: Build Docker image
       run: |
-        mlflow models build-docker --model-uri runs:/${{ steps.get_run_id.outputs.run_id }}/xgb_model --name sleep-disorder-model
+        mlflow models build-docker --model-uri runs:/${{ env.RUN_ID }}/xgb_model --name mellisadmyn/sleep-disorder-model:latest
 
     - name: Tag Docker image
       run: |
