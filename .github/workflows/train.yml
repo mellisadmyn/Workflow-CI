@@ -1,0 +1,63 @@
+name: Train and Deploy Model
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  train-deploy:
+    runs-on: ubuntu-latest
+
+    env:
+      MLFLOW_TRACKING_URI: https://dagshub.com/mellisadmyn/sleep_disorder_mlflow.mlflow
+      MLFLOW_TRACKING_USERNAME: mellisadmyn
+      MLFLOW_TRACKING_PASSWORD: ${{ secrets.MLFLOW_TRACKING_PASSWORD }}
+
+    steps:
+    - name: Checkout Repo
+      uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: 3.11
+
+    - name: Install dependencies
+      run: |
+        pip install -r MLProject/requirements.txt
+
+    - name: Run MLflow project
+      run: |
+        mlflow run MLProject --env-manager=local
+
+    - name: Get latest run ID
+      id: get_run_id
+      run: |
+        RUN_ID=$(ls -td mlruns/0/* | head -n 1 | cut -d'/' -f3)
+        echo "RUN_ID=$RUN_ID" >> $GITHUB_ENV
+        echo "run_id=$RUN_ID" >> $GITHUB_OUTPUT
+
+    - name: Upload model artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: model-artifact
+        path: ./mlruns
+
+    - name: Build Docker image
+      run: |
+        mlflow models build-docker --model-uri runs:/${{ env.RUN_ID }}/xgb_model --name sleep-disorder-model
+
+    - name: Tag Docker image
+      run: |
+        docker tag sleep-disorder-model mellisadmyn/sleep-disorder-model:latest
+
+    - name: Log in to Docker Hub
+      uses: docker/login-action@v2
+      with:
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_PASSWORD }}
+
+    - name: Push Docker image to Docker Hub
+      run: |
+        docker push mellisadmyn/sleep-disorder-model:latest
