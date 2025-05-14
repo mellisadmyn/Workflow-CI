@@ -4,7 +4,5 @@ conda_env: conda.yaml
 
 entry_points:
   main:
-    parameters:
-      data_path: {type: str, default: "clean_sleep_health_and_lifestyle_dataset.csv"}
     command: >
       python modelling.py
