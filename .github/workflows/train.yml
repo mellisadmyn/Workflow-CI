@@ -1,0 +1,71 @@
+name: Train and Deploy Model
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  train-deploy:
+    runs-on: ubuntu-latest
+
+    env:
+      MLFLOW_TRACKING_URI: https://dagshub.com/mellisadmyn/sleep_disorder_mlflow.mlflow
+      MLFLOW_TRACKING_USERNAME: mellisadmyn
+      MLFLOW_TRACKING_PASSWORD: ${{ secrets.MLFLOW_TRACKING_PASSWORD }}
+
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.11
+
+      - name: Install dependencies
+        run: |
+          pip install -r MLProject/requirements.txt
+
+      - name: Run MLflow project
+        run: |
+          mlflow run MLProject --env-manager=local --run-name xgb_fixed_run
+
+      - name: Get latest MLflow run_id
+        run: |
+          echo "Getting latest run ID..."
+          python <<EOF
+          import mlflow
+          client = mlflow.tracking.MlflowClient()
+          runs = client.search_runs(experiment_ids=["0"], order_by=["start_time DESC"])
+          run_id = runs[0].info.run_id
+          print(f"Latest run ID: {run_id}")
+          with open("${{ github.env }}", "a") as f:
+              f.write(f"RUN_ID={run_id}\n")
+          EOF
+
+      - name: Download model artifacts
+        run: |
+          echo "Downloading model artifact for run: $RUN_ID"
+          mlflow artifacts download --run-id $RUN_ID --artifact-path xgb_model -d ./downloaded
+          mv ./downloaded/xgb_model ./xgb_model
+
+      - name: Upload model artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: xgb_model_artifact
+          path: ./xgb_model
+
+      - name: Build Docker image
+        run: |
+          mlflow models build-docker --model-uri ./xgb_model --name mellisadmyn/sleep-disorder-model:latest
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+
+      - name: Push Docker image to Docker Hub
+        run: |
+          docker push mellisadmyn/sleep-disorder-model:latest
