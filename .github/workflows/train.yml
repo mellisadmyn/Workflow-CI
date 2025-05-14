@@ -40,23 +40,28 @@ jobs:
           runs = client.search_runs(experiment_ids=["0"], order_by=["start_time DESC"])
           run_id = runs[0].info.run_id
           print(f"Latest run ID: {run_id}")
-          with open("${{ github.env }}", "a") as f:
+          with open("${GITHUB_ENV}", "a") as f:
               f.write(f"RUN_ID={run_id}\n")
           EOF
 
-      - name: Upload model artifact
+      - name: Download model artifact from MLflow (DagsHub)
+        run: |
+          mlflow artifacts download \
+            --run-id $RUN_ID \
+            --artifact-path xgb_model \
+            -d ./xgb_model
+
+      - name: Upload model artifact to GitHub
         uses: actions/upload-artifact@v4
         with:
-          name: model-artifact
-          path: ./mlruns
+          name: xgb_model_artifact
+          path: ./xgb_model
 
-      - name: Build Docker image
+      - name: Build Docker image from downloaded model
         run: |
-          mlflow models build-docker --model-uri runs:/${{ env.RUN_ID }}/xgb_model --name mellisadmyn/sleep-disorder-model:latest
-
-      - name: Tag Docker image
-        run: |
-          docker tag sleep-disorder-model mellisadmyn/sleep-disorder-model:latest
+          mlflow models build-docker \
+            --model-uri ./xgb_model \
+            --name mellisadmyn/sleep-disorder-model:latest
 
       - name: Log in to Docker Hub
         uses: docker/login-action@v2
