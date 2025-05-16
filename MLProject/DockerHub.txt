@@ -1,1 +1,1 @@
-https://hub.docker.com/repository/docker/mellisadmyn/sleep-disorder-model/general
+https://hub.docker.com/r/mellisadmyn/sleep-disorder-model
