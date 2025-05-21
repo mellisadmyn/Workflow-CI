@@ -112,7 +112,7 @@ def main():
 
             # Log parameter secara manual
             mlflow.log_param("n_estimators", 100)
-            mlflow.log_param("max_depth", None)
+            mlflow.log_param("max_depth", "None")
             mlflow.log_param("min_samples_split", 2)
             mlflow.log_param("min_samples_leaf", 2)
 
