@@ -64,20 +64,20 @@ jobs:
       - name: Download model artifacts
         run: |
           echo "Downloading model artifact for run: $RUN_ID"
-          mlflow artifacts download --run-id $RUN_ID --artifact-path rf_model -d ./downloaded
-          mv ./downloaded/rf_model ./rf_model
+          mlflow artifacts download --run-id $RUN_ID --artifact-path random_forest_model -d ./downloaded
+          mv ./downloaded/random_forest_model ./random_forest_model
 
       # Upload the downloaded model as a GitHub Actions artifact
       - name: Upload to GitHub artifact
         uses: actions/upload-artifact@v4
         with:
           name: rf_model_artifact
-          path: ./rf_model
+          path: ./random_forest_model
 
       # Build a Docker image from the trained MLflow model
       - name: Build Docker Model
         run: |
-          mlflow models build-docker --model-uri ./rf_model --name mellisadmyn/sleep-disorder-model
+          mlflow models build-docker --model-uri ./random_forest_model --name mellisadmyn/sleep-disorder-model
 
       # Authenticate to Docker Hub
       - name: Log in to Docker Hub
