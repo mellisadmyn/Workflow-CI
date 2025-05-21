@@ -44,7 +44,7 @@ jobs:
       # Run the MLflow project
       - name: Run MLflow project
         run: |
-          mlflow run MLProject --env-manager=local --run-name xgb_fixed_run
+          mlflow run MLProject --env-manager=local --run-name rf_model_run
 
       # Get the latest MLflow run ID from the experiment stored in Dagshub
       - name: Get latest MLflow run_id
@@ -64,20 +64,20 @@ jobs:
       - name: Download model artifacts
         run: |
           echo "Downloading model artifact for run: $RUN_ID"
-          mlflow artifacts download --run-id $RUN_ID --artifact-path xgb_model -d ./downloaded
-          mv ./downloaded/xgb_model ./xgb_model
+          mlflow artifacts download --run-id $RUN_ID --artifact-path rf_model -d ./downloaded
+          mv ./downloaded/rf_model ./rf_model
 
       # Upload the downloaded model as a GitHub Actions artifact
       - name: Upload to GitHub artifact
         uses: actions/upload-artifact@v4
         with:
-          name: xgb_model_artifact
-          path: ./xgb_model
+          name: rf_model_artifact
+          path: ./rf_model
 
       # Build a Docker image from the trained MLflow model
       - name: Build Docker Model
         run: |
-          mlflow models build-docker --model-uri ./xgb_model --name mellisadmyn/sleep-disorder-model
+          mlflow models build-docker --model-uri ./rf_model --name mellisadmyn/sleep-disorder-model
 
       # Authenticate to Docker Hub
       - name: Log in to Docker Hub
