@@ -44,7 +44,7 @@ jobs:
       # Run the MLflow project
       - name: Run MLflow project
         run: |
-          mlflow run MLProject --env-manager=local --run-name rf_fixed_params
+          mlflow run MLProject --env-manager=local --run-name rf_fixed_params --experiment-name "Sleep_Disorder_Classification_RF"
 
       # Get the latest MLflow run ID from the experiment stored in Dagshub
       - name: Get latest MLflow run_id
@@ -53,7 +53,7 @@ jobs:
           python <<EOF
           import mlflow
           client = mlflow.tracking.MlflowClient()
-          runs = client.search_runs(experiment_ids=["0"], order_by=["start_time DESC"])
+          runs = client.search_runs(experiment_ids=["1"], order_by=["start_time DESC"])
           run_id = runs[0].info.run_id
           print(f"Latest run ID: {run_id}")
           with open("${{ github.env }}", "a") as f:

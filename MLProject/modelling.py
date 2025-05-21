@@ -100,6 +100,9 @@ def main():
         y_train = load_data("processed-dataset/y_train.csv").squeeze()
         y_test  = load_data("processed-dataset/y_test.csv").squeeze()
 
+        print("MLFLOW_TRACKING_URI:", mlflow.get_tracking_uri())
+        print("Current experiment:", mlflow.get_experiment_by_name("Sleep_Disorder_Classification_RF"))
+
         with mlflow.start_run(run_name="rf_fixed_params"):
             best_model = RandomForestClassifier(
                 n_estimators=100,
