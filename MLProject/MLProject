@@ -1,4 +1,4 @@
-name: sleep-disorder-xgb
+name: sleep-disorder-rf
 
 conda_env: conda.yaml
 

@@ -100,23 +100,21 @@ def main():
         y_train = load_data("processed-dataset/y_train.csv").squeeze()
         y_test  = load_data("processed-dataset/y_test.csv").squeeze()
 
-        with mlflow.start_run(run_name="rf_manuallog_hyptuning-params"):
-            param_grid = {
-                "n_estimators": [50, 100, 150, 200],
-                "max_depth": [None, 10, 20],
-                "min_samples_split": [2, 3, 5],
-                "min_samples_leaf": [1, 2, 3]
-            }
-
-            base_model = RandomForestClassifier(random_state=42)
-            grid_search = GridSearchCV(
-                base_model, param_grid, cv=3, n_jobs=-1, scoring="accuracy", verbose=0
+        with mlflow.start_run(run_name="rf_fixed_params"):
+            best_model = RandomForestClassifier(
+                n_estimators=100,
+                max_depth=None,
+                min_samples_split=2,
+                min_samples_leaf=2,
+                random_state=42
             )
-            grid_search.fit(X_train, y_train)
-            best_model = grid_search.best_estimator_
+            best_model.fit(X_train, y_train)
 
-            print(f"[INFO] Best params: {grid_search.best_params_}")
-            mlflow.log_params(grid_search.best_params_)
+            # Log parameter secara manual
+            mlflow.log_param("n_estimators", 100)
+            mlflow.log_param("max_depth", None)
+            mlflow.log_param("min_samples_split", 2)
+            mlflow.log_param("min_samples_leaf", 2)
 
             # Manual log training metrics
             train_metrics = evaluate_model(best_model, X_train, y_train, prefix="train_")

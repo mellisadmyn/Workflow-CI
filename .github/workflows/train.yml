@@ -44,7 +44,7 @@ jobs:
       # Run the MLflow project
       - name: Run MLflow project
         run: |
-          mlflow run MLProject --env-manager=local --run-name rf_model_run
+          mlflow run MLProject --env-manager=local --run-name rf_fixed_params
 
       # Get the latest MLflow run ID from the experiment stored in Dagshub
       - name: Get latest MLflow run_id
